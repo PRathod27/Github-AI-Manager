@@ -20,6 +20,7 @@ async def github_webhook(request: Request):
 
         for commit in commits:
             sha = commit.get("id")
+            message = commit.get("message")
             print("\n🔹 Processing Commit:", sha)
             # 🔥 STEP 1: Fetch code diff
             diff = get_commit_diff(repo, sha)
@@ -39,6 +40,7 @@ async def github_webhook(request: Request):
                 "type": "commit",
                 "repo": repo,
                 "sha": sha,
+                "message": message,           # ✅ SAVE THIS
                 "analysis": analysis
             })
 
