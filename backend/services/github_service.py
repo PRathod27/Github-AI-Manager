@@ -24,9 +24,6 @@ def get_commit_diff(repo: str, commit_sha: str):
 
     diff = response.text
 
-    print("📏 Raw diff length:", len(diff))
-    print("📄 Diff preview:\n", diff[:200])
-
     print("🔗 URL:", url)
     print("📦 Repo:", repo)
     print("🔑 Using Token:", GITHUB_TOKEN[:5], "...")  # partial print
@@ -34,7 +31,7 @@ def get_commit_diff(repo: str, commit_sha: str):
     return diff
 
 def create_issue(repo: str, title: str, body: str):
-    url = f"{BASE_URL}/repos/{repo}/issues"
+    url = f"https://api.github.com/repos/{repo}/issues"
 
     data = {
         "title": title,

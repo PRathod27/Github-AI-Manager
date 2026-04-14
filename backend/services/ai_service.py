@@ -27,4 +27,5 @@ Code Diff:
         return response.choices[0].message.content
 
     except Exception:
+        print("❌ GROQ ERROR:", e)
         return "Analysis unavailable"

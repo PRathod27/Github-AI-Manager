@@ -18,14 +18,10 @@ async def github_webhook(request: Request):
         repo = payload["repository"]["full_name"]
         commits = payload.get("commits", [])
 
-        print("📦 Repo:", repo)
-        print("📊 Total commits:", len(commits))
 
         for commit in commits:
             sha = commit.get("id")
-
             print("\n🔹 Processing Commit:", sha)
-
             # 🔥 STEP 1: Fetch code diff
             diff = get_commit_diff(repo, sha)
 
@@ -38,7 +34,6 @@ async def github_webhook(request: Request):
             # 🧠 STEP 2: AI analysis
             analysis = analyze_code(diff)
 
-            print("🧠 AI Analysis:\n", analysis)
 
             # 🗄️ STEP 3: Save to MongoDB
             events_collection.insert_one({
@@ -56,10 +51,6 @@ async def github_webhook(request: Request):
                 title="[AI] Code Change Analysis",
                 body=analysis
             )
-            print("Analysis", analysis[:100])
-        print("Repo:", repo)
-        print("SHA:", sha)
-        print("Diff length:", len(diff))    
 
 
         return {"status": "processed push"}
