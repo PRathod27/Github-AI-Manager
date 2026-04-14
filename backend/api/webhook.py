@@ -40,9 +40,9 @@ async def github_webhook(request: Request):
                 "type": "commit",
                 "repo": repo,
                 "sha": sha,
-                "message": message,           # ✅ SAVE THIS
+                "message": commit.get("message"),
                 "analysis": analysis
-            })
+})
 
             print("💾 Saved to MongoDB", sha)
 
