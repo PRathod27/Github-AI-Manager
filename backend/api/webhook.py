@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request
-
-from services.github_service import get_commit_diff, create_issue
-from services.ai_service import analyze_code
+from services.github_service import get_commit_diff, create_issue, get_pr_diff, comment_on_pr
+from services.ai_service import analyze_code, review_code
 from db.mongo import events_collection
 
 router = APIRouter()
@@ -54,4 +53,39 @@ async def github_webhook(request: Request):
 
 
         return {"status": "processed push"}
+
+    # 🔥 HANDLE PULL REQUESTS
+    # =========================
+    elif event_type == "pull_request":
+        action = payload.get("action")
+
+        # Only trigger on PR open or update
+        if action in ["opened", "synchronize"]:
+            repo = payload["repository"]["full_name"]
+            pr_number = payload["pull_request"]["number"]
+
+            print(f"🚀 Processing PR #{pr_number} ({action})")
+
+            # 🔥 Get PR diff
+            diff = get_pr_diff(repo, pr_number)
+
+            if not diff:
+                print("⚠️ No PR diff found..")
+                return {"status": "no diff"}
+
+            # 🧠 AI Review
+            review = review_code(diff)
+
+            # 💬 Comment on PR
+            comment_on_pr(repo, pr_number, review)
+
+            print(f"✅ PR reviewed: #{pr_number}")
+
+            return {"status": "PR reviewed"}
+
+        return {"status": f"PR action '{action}' ignored"}
+
+    # =========================
+    # ❌ OTHER EVENTS
+    # =========================
     return {"status": "ignored"}
