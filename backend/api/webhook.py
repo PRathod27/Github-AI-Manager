@@ -1,18 +1,65 @@
-from fastapi import APIRouter, Header, Request
-from utils.security import verify_signature
-from services.ai_service import analyze_code_change
-from services.github_service import post_comment
+from fastapi import APIRouter, Request
+
+from services.github_service import get_commit_diff, create_issue
+from services.ai_service import analyze_code
+from db.mongo import events_collection
 
 router = APIRouter()
 
+
 @router.post("/webhook")
-async def handle_github_event(request: Request, x_hub_signature_256: str = Header(None)):
-    await verify_signature(request, x_hub_signature_256)
+async def github_webhook(request: Request):
     payload = await request.json()
-    
-    # Trigger AI only on PRs or specific Pushes [cite: 41, 42]
-    if "pull_request" in payload:
-        analysis = await analyze_code_change(payload['pull_request']['diff_url'], "PR Review")
-        await post_comment(payload['repository']['full_name'], payload['pull_request']['number'], analysis['suggestion'])
-        
-    return {"status": "success"}
+    event_type = request.headers.get("X-GitHub-Event")
+
+    print("📩 Event Type:", event_type)
+
+    if event_type == "push":
+        repo = payload["repository"]["full_name"]
+        commits = payload.get("commits", [])
+
+        print("📦 Repo:", repo)
+        print("📊 Total commits:", len(commits))
+
+        for commit in commits:
+            sha = commit.get("id")
+
+            print("\n🔹 Processing Commit:", sha)
+
+            # 🔥 STEP 1: Fetch code diff
+            diff = get_commit_diff(repo, sha)
+
+            print("📏 Diff length:", len(diff))
+
+            if not diff:
+                print("⚠️ No diff found, skipping...")
+                continue
+
+            # 🧠 STEP 2: AI analysis
+            analysis = analyze_code(diff)
+
+            print("🧠 AI Analysis:\n", analysis)
+
+            # 🗄️ STEP 3: Save to MongoDB
+            events_collection.insert_one({
+                "type": "commit",
+                "repo": repo,
+                "sha": sha,
+                "analysis": analysis
+            })
+
+            print("💾 Saved to MongoDB", sha)
+
+            # 🚀 STEP 4: Create GitHub Issue
+            create_issue(
+                repo=repo,
+                title="[AI] Code Change Analysis",
+                body=analysis
+            )
+        print("Repo:", repo)
+        print("SHA:", sha)
+        print("Diff length:", len(diff))    
+        print("Analysis:", analysis[:100])
+
+        return {"status": "processed push"}
+    return {"status": "ignored"}
