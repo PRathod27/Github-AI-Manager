@@ -47,3 +47,35 @@ def create_issue(repo: str, title: str, body: str):
         print("✅ Issue created successfully")
 
     return response.json()
+
+def get_pr_diff(repo: str, pr_number: int):
+    url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}"
+
+    headers_diff = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3.diff"
+    }
+
+    response = requests.get(url, headers=headers_diff)
+
+    if response.status_code != 200:
+        print("❌ PR Diff Error:", response.text)
+        return ""
+
+    return response.text
+
+def comment_on_pr(repo: str, pr_number: int, comment: str):
+    url = f"https://api.github.com/repos/{repo}/issues/{pr_number}/comments"
+
+    data = {
+        "body": f"🤖 AI Code Review:\n\n{comment}"
+    }
+
+    response = requests.post(url, json=data, headers={
+        "Authorization": f"token {GITHUB_TOKEN}"
+    })
+
+    if response.status_code != 201:
+        print("❌ Failed to comment:", response.text)
+    else:
+        print("✅ Comment added to PR")
