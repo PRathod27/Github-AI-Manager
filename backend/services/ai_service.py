@@ -20,12 +20,12 @@ Code Diff:
 """
 
         response = client.chat.completions.create(
-            model="llama3-70b-8192",
+            model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}]
         )
 
         return response.choices[0].message.content
 
-    except Exception:
+    except Exception as e:
         print("❌ GROQ ERROR:", e)
         return "Analysis unavailable"
