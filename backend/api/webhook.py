@@ -70,7 +70,7 @@ async def github_webhook(request: Request):
             diff = get_pr_diff(repo, pr_number)
 
             if not diff:
-                print("⚠️ No PR diff found")
+                print("⚠️ No PR diff found..")
                 return {"status": "no diff"}
 
             # 🧠 AI Review
