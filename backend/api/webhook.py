@@ -56,10 +56,11 @@ async def github_webhook(request: Request):
                 title="[AI] Code Change Analysis",
                 body=analysis
             )
+            print("Analysis", analysis[:100])
         print("Repo:", repo)
         print("SHA:", sha)
         print("Diff length:", len(diff))    
-        print("Analysis:", analysis[:100])
+
 
         return {"status": "processed push"}
     return {"status": "ignored"}
