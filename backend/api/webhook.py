@@ -22,7 +22,7 @@ async def github_webhook(request: Request):
             sha = commit.get("id")
             message = commit.get("message")
             print("\n🔹 Processing Commit:", sha)
-            # 🔥 STEP 1: Fetch code diff
+            # Fetch code diff
             diff = get_commit_diff(repo, sha)
 
             print("📏 Diff length:", len(diff))
@@ -31,11 +31,9 @@ async def github_webhook(request: Request):
                 print("⚠️ No diff found, skipping...")
                 continue
 
-            # 🧠 STEP 2: AI analysis
+            # AI analysis
             analysis = analyze_code(diff)
 
-
-            # 🗄️ STEP 3: Save to MongoDB
             events_collection.insert_one({
                 "type": "commit",
                 "repo": repo,
@@ -46,7 +44,7 @@ async def github_webhook(request: Request):
 
             print("💾 Saved to MongoDB", sha)
 
-            # 🚀 STEP 4: Create GitHub Issue
+            #  Create GitHub Issue
             create_issue(
                 repo=repo,
                 title="[AI] Code Change Analysis",
@@ -56,19 +54,18 @@ async def github_webhook(request: Request):
 
         return {"status": "processed push"}
 
-    # 🔥 HANDLE PULL REQUESTS
-    # =========================
+    #  handling pull requests
     elif event_type == "pull_request":
         action = payload.get("action")
 
-        # Only trigger on PR open or update
+        # trigger on PR open or update
         if action in ["opened", "synchronize"]:
             repo = payload["repository"]["full_name"]
             pr_number = payload["pull_request"]["number"]
 
             print(f"🚀 Processing PR #{pr_number} ({action})")
 
-            # 🔥 Get PR diff
+            # Get PR diff
             diff = get_pr_diff(repo, pr_number)
 
             if not diff:
@@ -87,7 +84,5 @@ async def github_webhook(request: Request):
 
         return {"status": f"PR action '{action}' ignored"}
 
-    # =========================
-    # ❌ OTHER EVENTS
-    # =========================
+
     return {"status": "ignored"}

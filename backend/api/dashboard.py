@@ -6,7 +6,7 @@ router = APIRouter()
 
 @router.get("/events")
 def get_events(repo: str = Query(...)):
-    # ✅ filter by repo
+    # filter it by repo
     events = list(
         events_collection.find(
             {"repo": repo},
