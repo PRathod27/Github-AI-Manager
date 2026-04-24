@@ -8,7 +8,6 @@ import EventList from "./EventList";
 const API_URL = import.meta.env.VITE_API_URL;
 export default function Dashboard() {
     const [events, setEvents] = useState([]);
-
     const fetchData = async (repo) => {
         try {
             const res = await axios.get(
