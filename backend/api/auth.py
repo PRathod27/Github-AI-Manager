@@ -22,11 +22,13 @@ def login():
 
 # 🔹 CALLBACK ROUTE
 @router.get("/callback")
-def callback(code: str):
+def callback(code: str = None):
 
-    print("✅ Callback triggered")
+    if not code:
+        return {"error": "Missing code parameter"}
 
-    # 1. Exchange code → access token
+    print("✅ Callback hit")
+
     token_res = requests.post(
         "https://github.com/login/oauth/access_token",
         headers={"Accept": "application/json"},
@@ -41,9 +43,8 @@ def callback(code: str):
     access_token = token_data.get("access_token")
 
     if not access_token:
-        return {"error": "Failed to get access token"}
+        return {"error": "Failed to fetch token"}
 
-    # 2. Fetch GitHub user
     user_res = requests.get(
         "https://api.github.com/user",
         headers={"Authorization": f"Bearer {access_token}"}
@@ -51,25 +52,15 @@ def callback(code: str):
 
     user = user_res.json()
 
-    # 3. Prepare user data
-    user_data = {
-        "github_id": user.get("id"),
-        "username": user.get("login"),
-        "avatar_url": user.get("avatar_url"),
-        "access_token": access_token,
-        "created_at": datetime.utcnow()
-    }
-
-    # 4. Store in MongoDB (upsert)
     users_collection.update_one(
         {"github_id": user.get("id")},
-        {"$set": user_data},
+        {"$set": {
+            "username": user.get("login"),
+            "access_token": access_token
+        }},
         upsert=True
     )
 
-    print(f"✅ User stored: {user.get('login')}")
-
-    # 5. Redirect to frontend
     return RedirectResponse(
         f"https://github-ai-manager-frontend.vercel.app/auth-success?username={user.get('login')}"
     )
