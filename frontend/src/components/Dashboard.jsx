@@ -5,13 +5,14 @@ import StatsCards from "./StatsCards";
 import ActivityChart from "./ActivityChart";
 import EventList from "./EventList";
 
+const API_URL = import.meta.env.VITE_API_URL;
 export default function Dashboard() {
     const [events, setEvents] = useState([]);
 
     const fetchData = async (repo) => {
         try {
             const res = await axios.get(
-                `http://localhost:8000/api/events?repo=${repo}`
+                `${API_URL}/api/events?repo=${repo}`
             );
             setEvents(res.data.reverse());
         } catch (err) {
