@@ -66,10 +66,10 @@ export default function EventList({ events }) {
 
                                 <span
                                     className={`text-xs px-3 py-1 rounded-full ${parsed.risk === "High"
-                                            ? "bg-red-500/20 text-red-400"
-                                            : parsed.risk === "Medium"
-                                                ? "bg-yellow-500/20 text-yellow-400"
-                                                : "bg-green-500/20 text-green-400"
+                                        ? "bg-red-500/20 text-red-400"
+                                        : parsed.risk === "Medium"
+                                            ? "bg-yellow-500/20 text-yellow-400"
+                                            : "bg-green-500/20 text-green-400"
                                         }`}
                                 >
                                     {parsed.risk || "Low"} Risk
