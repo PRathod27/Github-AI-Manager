@@ -32,3 +32,8 @@ jobs:
       - name: Health Check (optional)
         run: |
           echo "CI running successfully"
+
+      - name: Trigger Deployment to Render
+        if: github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
