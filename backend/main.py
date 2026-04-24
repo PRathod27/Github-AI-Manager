@@ -5,16 +5,16 @@ from api import webhook, dashboard
 
 app = FastAPI()
 
-# ✅ CORS MUST BE HERE (BEFORE ROUTES)
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # 👈 NOT "*"
+    allow_origins=["https://github-ai-manager-frontend.vercel.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ✅ Routers
+
 app.include_router(webhook.router)
 app.include_router(dashboard.router, prefix="/api")
 
