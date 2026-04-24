@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 import requests
 import os
-from db.connection import users_collection
+from db.mongo import users_collection
 
 router = APIRouter()
 
