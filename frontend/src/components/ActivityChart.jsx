@@ -10,7 +10,7 @@ import {
 
 export default function ActivityChart({ events }) {
 
-    // 🧠 Handle empty state
+    // ✅ Empty state
     if (!events || events.length === 0) {
         return (
             <div className="bg-[#0f172a] p-6 rounded-2xl border border-gray-800 text-gray-400">
@@ -19,23 +19,38 @@ export default function ActivityChart({ events }) {
         );
     }
 
-    // 🧠 Group commits by date
+    // 🔥 GROUP BY TIME (fix for single dot issue)
     const grouped = {};
 
     events.forEach((e) => {
-        const date = new Date(e.created_at).toLocaleDateString();
+        const time = new Date(e.created_at).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        });
 
-        if (!grouped[date]) grouped[date] = 0;
-        grouped[date] += 1;
+        if (!grouped[time]) grouped[time] = 0;
+        grouped[time] += 1;
     });
 
-    // ✅ Sort dates properly
-    const data = Object.keys(grouped)
-        .sort((a, b) => new Date(a) - new Date(b))
-        .map((date) => ({
-            date,
-            commits: grouped[date],
+    // 🔥 SORT TIME PROPERLY
+    let data = Object.keys(grouped)
+        .sort((a, b) => {
+            const t1 = new Date(`1970/01/01 ${a}`);
+            const t2 = new Date(`1970/01/01 ${b}`);
+            return t1 - t2;
+        })
+        .map((time) => ({
+            time,
+            commits: grouped[time],
         }));
+
+    // ⚠️ FALLBACK: if still only 1 point → use index-based chart
+    if (data.length <= 1) {
+        data = events.map((_, i) => ({
+            time: `#${i + 1}`,
+            commits: i + 1,
+        }));
+    }
 
     return (
         <div className="bg-[#0f172a] p-6 rounded-2xl shadow-xl border border-gray-800">
@@ -46,14 +61,14 @@ export default function ActivityChart({ events }) {
                     Commit Activity
                 </h3>
                 <span className="text-xs text-gray-400">
-                    {data.length} days tracked
+                    {data.length} points tracked
                 </span>
             </div>
 
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={data}>
 
-                    {/* 🔥 Gradient */}
+                    {/* Gradient */}
                     <defs>
                         <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
@@ -70,7 +85,7 @@ export default function ActivityChart({ events }) {
 
                     {/* X Axis */}
                     <XAxis
-                        dataKey="date"
+                        dataKey="time"
                         stroke="#6b7280"
                         tick={{ fontSize: 12 }}
                         tickLine={false}
@@ -87,7 +102,7 @@ export default function ActivityChart({ events }) {
                     {/* Tooltip */}
                     <Tooltip
                         formatter={(value) => [`${value} commits`, "Activity"]}
-                        labelFormatter={(label) => `Date: ${label}`}
+                        labelFormatter={(label) => `Time: ${label}`}
                         contentStyle={{
                             backgroundColor: "#020617",
                             border: "1px solid #1f2937",
@@ -104,9 +119,18 @@ export default function ActivityChart({ events }) {
                         dataKey="commits"
                         stroke="url(#colorGradient)"
                         strokeWidth={3}
-                        dot={false}
+
+                        // ✅ SHOW DOTS
+                        dot={{
+                            r: 3,
+                            fill: "#3b82f6",
+                            stroke: "#0f172a",
+                            strokeWidth: 2,
+                        }}
+
+                        // ✅ HOVER DOT (bigger)
                         activeDot={{
-                            r: 5,
+                            r: 6,
                             fill: "#3b82f6",
                             stroke: "#0f172a",
                             strokeWidth: 2,

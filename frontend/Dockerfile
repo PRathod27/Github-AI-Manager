@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -8,10 +8,8 @@ RUN npm install
 
 COPY . .
 
-# Build Vite app
 RUN npm run build
 
-# Serve static files
 RUN npm install -g serve
 
 CMD ["serve", "-s", "dist", "-l", "5173"]
