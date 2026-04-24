@@ -10,31 +10,53 @@ const API_URL = import.meta.env.VITE_API_URL;
 export default function Dashboard() {
     const [events, setEvents] = useState([]);
     const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    // ✅ Load user from localStorage
+    // 🔍 Debug API URL
     useEffect(() => {
+        console.log("🌐 API URL:", API_URL);
+
         const storedUser = localStorage.getItem("user");
         if (storedUser) setUser(storedUser);
     }, []);
 
-    // ✅ Fetch repo data
+    // 🚀 Fetch repo data
     const fetchData = async (repo) => {
+        setLoading(true);
+
         try {
+            console.log("📦 Fetching repo:", repo);
+
             const res = await axios.get(
                 `${API_URL}/api/events?repo=${repo}`
             );
-            setEvents(res.data.reverse());
+
+            console.log("✅ Response:", res.data);
+
+            setEvents(Array.isArray(res.data) ? res.data.reverse() : []);
+
         } catch (err) {
-            console.error(err);
+            console.error("❌ API ERROR:", err);
+
+            if (err.response) {
+                alert(`Server Error: ${err.response.status}`);
+            } else if (err.request) {
+                alert("Network Error: Backend not reachable or sleeping");
+            } else {
+                alert("Unexpected Error occurred");
+            }
+
+        } finally {
+            setLoading(false);
         }
     };
 
-    // ✅ Login redirect
+    // 🔐 Login
     const handleLogin = () => {
         window.location.href = `${API_URL}/auth/login`;
     };
 
-    // ✅ Logout
+    // 🚪 Logout
     const handleLogout = () => {
         localStorage.removeItem("user");
         setUser(null);
@@ -71,13 +93,22 @@ export default function Dashboard() {
                 )}
             </div>
 
-            {/* EXISTING UI */}
+            {/* 📦 Repo Input */}
             <RepoInput onSubmit={fetchData} />
 
+            {/* ⏳ Loading */}
+            {loading && (
+                <p className="mt-4 text-blue-400">
+                    Loading data... (backend may be waking up)
+                </p>
+            )}
+
+            {/* 📊 Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
                 <StatsCards events={events} />
             </div>
 
+            {/* 📈 Charts + Events */}
             <div className="grid md:grid-cols-2 gap-6 mt-6">
                 <ActivityChart events={events} />
                 <EventList events={events} />
