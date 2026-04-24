@@ -2,15 +2,12 @@ from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 import requests
 import os
+from config.settings import CLIENT_ID, CLIENT_SECRET
 from datetime import datetime
 
 from db.mongo import users_collection
 
 router = APIRouter()
-
-CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
-CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
-
 
 # 🔹 LOGIN ROUTE
 @router.get("/login")
